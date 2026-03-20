@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct SlotView: View {
     let slot: AppSlot
     let isRecording: Bool
+    let isDimmed: Bool
     let isShaking: Bool
     let onTap: () -> Void
     let onDrop: (URL) -> Void
@@ -90,6 +91,7 @@ struct SlotView: View {
             }
         }
         .frame(width: 90, height: 110)
+        .opacity(isDimmed ? 0.4 : 1.0)
     }
 
     private var recordingContent: some View {
@@ -148,46 +150,51 @@ struct SlotView: View {
         return 0
     }
 
-    private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
+    nonisolated private func handleDrop(
+        _ providers: [NSItemProvider]
+    ) -> Bool {
         guard let provider = providers.first else { return false }
 
-        // Check for internal slot reorder
+        let onSlotDrop = onSlotDrop
+        let onDrop = onDrop
+
         if provider.canLoadObject(ofClass: String.self) {
-            provider.loadObject(ofClass: String.self) { string, _ in
+            _ = provider.loadObject(ofClass: String.self) { string, _ in
                 guard let string = string,
                     string.hasPrefix("hermes-slot:"),
                     let sourceIndex = Int(
                         string.replacingOccurrences(
                             of: "hermes-slot:", with: ""))
                 else {
-                    // Not an internal drag — try as file URL
-                    self.loadFileURL(from: provider)
+                    provider.loadItem(
+                        forTypeIdentifier: UTType.fileURL.identifier
+                    ) { item, _ in
+                        guard let data = item as? Data,
+                            let url = URL(
+                                dataRepresentation: data,
+                                relativeTo: nil),
+                            url.pathExtension == "app"
+                        else { return }
+                        DispatchQueue.main.async { onDrop(url) }
+                    }
                     return
                 }
-                DispatchQueue.main.async {
-                    onSlotDrop(sourceIndex)
-                }
+                DispatchQueue.main.async { onSlotDrop(sourceIndex) }
             }
             return true
         }
 
-        loadFileURL(from: provider)
-        return true
-    }
-
-    private func loadFileURL(from provider: NSItemProvider) {
-        provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier) {
-            item, _ in
+        provider.loadItem(
+            forTypeIdentifier: UTType.fileURL.identifier
+        ) { item, _ in
             guard let data = item as? Data,
                 let url = URL(
-                    dataRepresentation: data, relativeTo: nil)
+                    dataRepresentation: data, relativeTo: nil),
+                url.pathExtension == "app"
             else { return }
-            if url.pathExtension == "app" {
-                DispatchQueue.main.async {
-                    onDrop(url)
-                }
-            }
+            DispatchQueue.main.async { onDrop(url) }
         }
+        return true
     }
 }
 

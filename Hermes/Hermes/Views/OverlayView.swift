@@ -7,7 +7,10 @@ struct OverlayView: View {
     @State private var recordingIndex: Int?
     @State private var shakeIndex: Int?
     @State private var liveModifiers: String = ""
+    @State private var usingEventTap = false
     let onDismiss: () -> Void
+
+    private let recordingTap = RecordingEventTap()
 
     private let columns = SlotStore.columns
 
@@ -36,6 +39,7 @@ struct OverlayView: View {
                     }
                 }
                 .padding(.horizontal, 40)
+                .opacity(recordingIndex != nil ? 0.4 : 1.0)
 
                 Rectangle()
                     .fill(.white.opacity(0.15))
@@ -70,6 +74,7 @@ struct OverlayView: View {
                         SlotView(
                             slot: slotStore.slots[index],
                             isRecording: recordingIndex == index,
+                            isDimmed: recordingIndex != nil && recordingIndex != index,
                             isShaking: shakeIndex == index,
                             onTap: { handleSlotTap(index) },
                             onDrop: { url in handleDrop(url, at: index) },
@@ -90,6 +95,17 @@ struct OverlayView: View {
                 .padding(.horizontal, 40)
 
                 Spacer()
+
+                Button {
+                    onDismiss()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.white.opacity(0.4))
+                }
+                .buttonStyle(.plain)
+                .padding(.bottom, 40)
+                .keyboardShortcut("q", modifiers: .command)
             }
         }
         .onTapGesture {
@@ -98,7 +114,7 @@ struct OverlayView: View {
             }
         }
         .onKeyDown(
-            isActive: recordingIndex != nil,
+            isActive: recordingIndex != nil && !usingEventTap,
             { event in handleKeyEvent(event) },
             onFlagsChanged: { event in handleFlagsChanged(event) }
         )
@@ -108,9 +124,32 @@ struct OverlayView: View {
         hotkeyManager.unregisterAll()
         recordingIndex = index
         liveModifiers = ""
+
+        recordingTap.onKeyDown = { keyCode, flags in
+            MainActor.assumeIsolated {
+                handleRecordedKey(keyCode: keyCode, flags: flags)
+            }
+        }
+        recordingTap.onFlagsChanged = { flags in
+            MainActor.assumeIsolated {
+                guard recordingIndex != nil else { return }
+                liveModifiers = HotkeyCombo.modifiersDisplayString(flags: flags)
+            }
+        }
+        let accessGranted = RecordingEventTap.isAccessibilityGranted
+        print("[Hermes] Accessibility granted: \(accessGranted)")
+        usingEventTap = recordingTap.start()
+        print("[Hermes] Event tap started: \(usingEventTap)")
+        if !usingEventTap && !accessGranted {
+            RecordingEventTap.promptAccessibilityOnce()
+        }
     }
 
     private func stopRecording() {
+        if usingEventTap {
+            recordingTap.stop()
+            usingEventTap = false
+        }
         recordingIndex = nil
         liveModifiers = ""
         hotkeyManager.registerAll()
@@ -127,26 +166,21 @@ struct OverlayView: View {
         }
     }
 
-    private func handleKeyEvent(_ event: NSEvent) {
-        // Escape cancels recording
-        if event.keyCode == 0x35 {
+    private func handleRecordedKey(keyCode: UInt16, flags: NSEvent.ModifierFlags) {
+        if keyCode == 0x35 {
             stopRecording()
             return
         }
 
         guard let index = recordingIndex else { return }
 
-        // Delete/Backspace clears the hotkey
-        if event.keyCode == 0x33 || event.keyCode == 0x75 {
+        if keyCode == 0x33 || keyCode == 0x75 {
             slotStore.clearHotkey(at: index)
             stopRecording()
             return
         }
 
-        let combo = HotkeyCombo.fromNSEvent(
-            keyCode: event.keyCode,
-            flags: event.modifierFlags
-        )
+        let combo = HotkeyCombo.fromNSEvent(keyCode: keyCode, flags: flags)
         if combo.isValid {
             slotStore.setHotkey(combo, forIndex: index)
             stopRecording()
@@ -156,6 +190,11 @@ struct OverlayView: View {
                 shakeIndex = nil
             }
         }
+    }
+
+    // Fallback when CGEventTap isn't available
+    private func handleKeyEvent(_ event: NSEvent) {
+        handleRecordedKey(keyCode: event.keyCode, flags: event.modifierFlags)
     }
 
     private func handleFlagsChanged(_ event: NSEvent) {

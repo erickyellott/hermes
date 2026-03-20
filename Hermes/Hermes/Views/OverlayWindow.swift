@@ -28,12 +28,12 @@ final class OverlayWindow: NSWindow {
             defer: false
         )
 
-        self.level = .statusBar
+        self.level = .normal
         self.isOpaque = false
         self.backgroundColor = .clear
         self.hasShadow = false
         self.ignoresMouseEvents = false
-        self.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        self.collectionBehavior = [.fullScreenAuxiliary]
 
         let overlayView = OverlayView(
             slotStore: slotStore,

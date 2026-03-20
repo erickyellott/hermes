@@ -4,7 +4,7 @@ import ServiceManagement
 import SwiftUI
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate, @preconcurrency NSMenuDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     static private(set) var shared: AppDelegate!
 
     private var statusItem: NSStatusItem!

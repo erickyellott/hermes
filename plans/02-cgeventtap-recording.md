@@ -94,7 +94,7 @@ this prevents the triggering app (Alfred) from also acting on it.
 
 ## Todo
 
-- [ ] Create `RecordingEventTap.swift` with tap lifecycle
-- [ ] Wire into `OverlayView` `startRecording`/`stopRecording`
-- [ ] Accessibility permission check + one-time alert
+- [x] Create `RecordingEventTap.swift` with tap lifecycle
+- [x] Wire into `OverlayView` `startRecording`/`stopRecording`
+- [x] Accessibility permission check + one-time alert
 - [ ] Test with Alfred combo stealing (⌘⌥M, ⌘⌥')
