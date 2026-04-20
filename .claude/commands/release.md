@@ -35,5 +35,15 @@ git push origin v$VERSION
 gh release create v$VERSION ~/Desktop/Hermes-$VERSION.zip \
   --repo erickyellott/hermes \
   --title "Hermes v$VERSION" \
-  --notes "Release v$VERSION"
+  --notes "## Install
+
+1. Download and unzip \`Hermes-$VERSION.zip\`
+2. Move \`Hermes.app\` to \`/Applications\`
+3. Run in Terminal:
+
+\`\`\`bash
+xattr -cr /Applications/Hermes.app
+\`\`\`
+
+Then open normally. You only need to do this once."
 ```
