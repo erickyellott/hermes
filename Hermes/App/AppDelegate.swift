@@ -19,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         installCarbonEventHandler()
         hotkeyManager.slotStore = slotStore
         hotkeyManager.registerAll()
+        showOverlay()
     }
 
     private func setupStatusItem() {

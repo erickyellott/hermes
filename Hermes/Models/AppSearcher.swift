@@ -20,11 +20,9 @@ final class AppSearcher: ObservableObject {
     @Published var results: [SearchResult] = []
 
     private var allApps: [URL] = []
-    private var dockApps: [SearchResult] = []
 
     init() {
         loadApps()
-        loadDockApps()
         results = defaultResults()
     }
 
@@ -65,57 +63,10 @@ final class AppSearcher: ObservableObject {
         }
     }
 
-    private func loadDockApps() {
-        let plistPath =
-            FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(
-                "Library/Preferences/com.apple.dock.plist")
-        guard let plist = NSDictionary(contentsOf: plistPath),
-            let persistentApps = plist["persistent-apps"] as? [[String: Any]]
-        else { return }
-
-        var apps: [SearchResult] = []
-        for entry in persistentApps {
-            guard
-                let tileData = entry["tile-data"] as? [String: Any],
-                let fileData = tileData["file-data"] as? [String: Any],
-                let path = fileData["_CFURLString"] as? String
-            else { continue }
-
-            // Clean up the URL string (may be file:// prefixed)
-            let url: URL
-            if path.hasPrefix("file://") {
-                guard let parsed = URL(string: path) else { continue }
-                url = parsed
-            } else {
-                url = URL(fileURLWithPath: path)
-            }
-
-            guard FileManager.default.fileExists(atPath: url.path)
-            else { continue }
-
-            let name =
-                FileManager.default.displayName(atPath: url.path)
-                .replacingOccurrences(of: ".app", with: "")
-            let icon = NSWorkspace.shared.icon(forFile: url.path)
-            apps.append(
-                SearchResult(id: url, url: url, name: name, icon: icon))
-        }
-        dockApps = Array(apps.prefix(SlotStore.columns))
-    }
-
     private func defaultResults() -> [SearchResult] {
         var seen = Set<URL>()
         var combined: [SearchResult] = []
 
-        // Dock apps first
-        for app in dockApps {
-            guard !seen.contains(app.url) else { continue }
-            seen.insert(app.url)
-            combined.append(app)
-        }
-
-        // Then running apps not already in Dock
         for app in NSWorkspace.shared.runningApplications {
             guard let url = app.bundleURL,
                 url.pathExtension == "app",
