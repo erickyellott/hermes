@@ -30,7 +30,7 @@ final class WindowResizer {
 
         let axWindow = window as! AXUIElement
         let currentScreen = screen(for: axWindow) ?? NSScreen.main ?? NSScreen.screens[0]
-        print("[Hermes] WindowResizer: screen=\(currentScreen.localizedName ?? "?") visibleFrame=\(currentScreen.visibleFrame)")
+        print("[Hermes] WindowResizer: screen=\(currentScreen.localizedName) visibleFrame=\(currentScreen.visibleFrame)")
 
         let screens = NSScreen.screens
         let last = lastResize[pid]
@@ -38,7 +38,7 @@ final class WindowResizer {
         if let last, last.kind == kind, last.screenID == displayID(of: currentScreen) {
             if screens.count > 1, let idx = screens.firstIndex(of: currentScreen) {
                 let nextScreen = screens[(idx + 1) % screens.count]
-                print("[Hermes] WindowResizer: cycling to next screen \(nextScreen.localizedName ?? "?")")
+                print("[Hermes] WindowResizer: cycling to next screen \(nextScreen.localizedName)")
                 apply(kind: kind, window: axWindow, screen: nextScreen)
                 lastResize[pid] = LastResize(kind: kind, screenID: displayID(of: nextScreen))
             } else {

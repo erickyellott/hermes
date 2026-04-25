@@ -251,6 +251,8 @@ struct OverlayView: View {
                 .frame(height: 1)
                 .padding(.horizontal, 60)
 
+            Spacer()
+
             WindowResizePage(
                 store: windowLayoutStore,
                 hotkeyManager: hotkeyManager,

@@ -40,7 +40,7 @@ final class OverlayWindow: NSWindow {
         self.backgroundColor = .clear
         self.hasShadow = false
         self.ignoresMouseEvents = false
-        self.collectionBehavior = [.fullScreenAuxiliary]
+        self.collectionBehavior = [.fullScreenAuxiliary, .moveToActiveSpace]
 
         let overlayView = OverlayView(
             slotStore: slotStore,

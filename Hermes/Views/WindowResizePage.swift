@@ -13,8 +13,15 @@ struct WindowResizePage: View {
     private let recordingTap = RecordingEventTap()
 
     var body: some View {
-        VStack(spacing: 32) {
-            ForEach(layoutGroups, id: \.self) { group in
+        VStack(spacing: 0) {
+            ForEach(Array(layoutGroups.enumerated()), id: \.offset) { index, group in
+                if index > 0 {
+                    Rectangle()
+                        .fill(.white.opacity(0.15))
+                        .frame(height: 1)
+                        .padding(.horizontal, 60)
+                        .padding(.vertical, 24)
+                }
                 HStack(spacing: 20) {
                     ForEach(group) { kind in
                         if let layout = store.layout(for: kind) {

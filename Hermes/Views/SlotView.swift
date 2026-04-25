@@ -150,13 +150,14 @@ struct SlotView: View {
         return 0
     }
 
-    nonisolated private func handleDrop(
+    private func handleDrop(
         _ providers: [NSItemProvider]
     ) -> Bool {
-        guard let provider = providers.first else { return false }
+        guard let firstProvider = providers.first else { return false }
 
-        let onSlotDrop = onSlotDrop
-        let onDrop = onDrop
+        nonisolated(unsafe) let provider = firstProvider
+        nonisolated(unsafe) let onSlotDrop = self.onSlotDrop
+        nonisolated(unsafe) let onDrop = self.onDrop
 
         if provider.canLoadObject(ofClass: String.self) {
             _ = provider.loadObject(ofClass: String.self) { string, _ in

@@ -51,7 +51,7 @@ final class HotkeyManager {
         hotKeyID: EventHotKeyID,
         into refs: inout [UInt32: EventHotKeyRef]
     ) {
-        var id = hotKeyID
+        let id = hotKeyID
         var ref: EventHotKeyRef?
         let status = RegisterEventHotKey(
             combo.keyCode, combo.modifiers, id,

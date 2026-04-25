@@ -64,7 +64,7 @@ enum LayoutKind: String, Codable, CaseIterable, Identifiable {
 
 // Grouped for display on the resize page
 let layoutGroups: [[LayoutKind]] = [
+    [.maximize],
     [.leftTwoThirds, .rightOneThird],
     [.leftHalf, .rightHalf],
-    [.maximize],
 ]
