@@ -23,7 +23,7 @@
 		A10014 /* VisualEffectBlur.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10014; };
 		A10015 /* KeyEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10015; };
 		A10016 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10016; };
-		A10017 /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10019; };
+		A10017 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10019; };
 		A10018 /* RecordingEventTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10020; };
 /* End PBXBuildFile section */
 
@@ -46,7 +46,7 @@
 		B10016 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B10017 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B10018 /* Hermes.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Hermes.entitlements; sourceTree = "<group>"; };
-		B10019 /* SettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindow.swift; sourceTree = "<group>"; };
+		B10019 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B10020 /* RecordingEventTap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingEventTap.swift; sourceTree = "<group>"; };
 		C10001 /* Hermes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hermes.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -124,7 +124,7 @@
 				B10013 /* SearchField.swift */,
 				B10014 /* VisualEffectBlur.swift */,
 				B10015 /* KeyEventHandler.swift */,
-				B10019 /* SettingsWindow.swift */,
+				B10019 /* SettingsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -216,7 +216,7 @@
 				A10013 /* SearchField.swift in Sources */,
 				A10014 /* VisualEffectBlur.swift in Sources */,
 				A10015 /* KeyEventHandler.swift in Sources */,
-				A10017 /* SettingsWindow.swift in Sources */,
+				A10017 /* SettingsView.swift in Sources */,
 				A10018 /* RecordingEventTap.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

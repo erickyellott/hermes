@@ -1,81 +1,21 @@
 import AppKit
 import Carbon
-import ServiceManagement
 import SwiftUI
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate {
     static private(set) var shared: AppDelegate!
 
-    private var statusItem: NSStatusItem!
     private var overlayWindow: OverlayWindow?
-    private var settingsWindow: SettingsWindow?
-    private let slotStore = SlotStore()
+    let slotStore = SlotStore()
     let hotkeyManager = HotkeyManager()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppDelegate.shared = self
-        setupStatusItem()
         installCarbonEventHandler()
         hotkeyManager.slotStore = slotStore
         hotkeyManager.registerAll()
         showOverlay()
-    }
-
-    private func setupStatusItem() {
-        statusItem = NSStatusBar.system.statusItem(
-            withLength: NSStatusItem.squareLength
-        )
-        if let button = statusItem.button {
-            button.image = NSImage(
-                systemSymbolName: "clipboard",
-                accessibilityDescription: "Hermes"
-            )
-        }
-        let menu = NSMenu()
-        menu.delegate = self
-        statusItem.menu = menu
-    }
-
-    func menuNeedsUpdate(_ menu: NSMenu) {
-        menu.removeAllItems()
-
-        let event = NSApp.currentEvent
-        let isRightClick =
-            event?.type == .rightMouseDown
-            || (event?.type == .leftMouseDown
-                && event?.modifierFlags.contains(.control) == true)
-
-        if isRightClick {
-            menu.addItem(
-                NSMenuItem(
-                    title: "Settings…",
-                    action: #selector(openSettings),
-                    keyEquivalent: ","
-                )
-            )
-            menu.addItem(.separator())
-            menu.addItem(
-                NSMenuItem(
-                    title: "Quit",
-                    action: #selector(NSApplication.terminate(_:)),
-                    keyEquivalent: "q"
-                )
-            )
-        } else {
-            menu.cancelTracking()
-            DispatchQueue.main.async { [weak self] in
-                self?.toggleOverlay()
-            }
-        }
-    }
-
-    @objc private func openSettings() {
-        if settingsWindow == nil {
-            settingsWindow = SettingsWindow()
-        }
-        settingsWindow?.show()
-        NSApp.activate(ignoringOtherApps: true)
     }
 
     private func installCarbonEventHandler() {
@@ -117,15 +57,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     // MARK: - Overlay
 
-    @objc func toggleOverlay() {
-        if let window = overlayWindow, window.isVisible {
-            dismissOverlay()
-        } else {
-            showOverlay()
-        }
-    }
-
-    private func showOverlay() {
+    func showOverlay() {
         if overlayWindow == nil {
             overlayWindow = OverlayWindow(
                 slotStore: slotStore,

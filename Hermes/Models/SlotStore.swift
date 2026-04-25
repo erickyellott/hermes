@@ -9,16 +9,30 @@ final class SlotStore: ObservableObject {
     static let totalHotkeySlots = columns * hotkeyRows  // 28
 
     @Published var slots: [AppSlot] = []
+    @Published private(set) var configURL: URL
 
-    private let defaultsKey = "hermes.slots"
+    private let configPathKey = "hermes.configPath"
+    private let legacyDefaultsKey = "hermes.slots"
 
     init() {
+        if let saved = UserDefaults.standard.string(forKey: "hermes.configPath") {
+            configURL = URL(fileURLWithPath: saved)
+        } else {
+            configURL = Self.makeDefaultConfigURL()
+        }
         load()
         if slots.isEmpty {
             slots = (0..<Self.totalHotkeySlots).map { i in
                 AppSlot(id: UUID(), appURL: nil, hotkey: nil, gridIndex: i)
             }
         }
+    }
+
+    private static func makeDefaultConfigURL() -> URL {
+        let appSupport = FileManager.default.urls(
+            for: .applicationSupportDirectory, in: .userDomainMask
+        ).first!
+        return appSupport.appendingPathComponent("Hermes/config.json")
     }
 
     func assignApp(url: URL, toIndex index: Int) {
@@ -37,7 +51,6 @@ final class SlotStore: ObservableObject {
 
     func setHotkey(_ combo: HotkeyCombo, forIndex index: Int) {
         guard index >= 0, index < slots.count else { return }
-        // Clear any other slot that has this same hotkey
         for i in slots.indices where slots[i].hotkey == combo && i != index {
             slots[i].hotkey = nil
         }
@@ -57,7 +70,6 @@ final class SlotStore: ObservableObject {
             sourceIndex != destIndex
         else { return }
 
-        // Swap the app and hotkey data, keep gridIndex stable
         let sourceApp = slots[sourceIndex].appURL
         let sourceHotkey = slots[sourceIndex].hotkey
         let destApp = slots[destIndex].appURL
@@ -70,18 +82,52 @@ final class SlotStore: ObservableObject {
         save()
     }
 
+    // MARK: - Config management
+
+    func switchConfig(to url: URL) {
+        configURL = url
+        UserDefaults.standard.set(url.path, forKey: configPathKey)
+        load()
+        if slots.isEmpty {
+            slots = (0..<Self.totalHotkeySlots).map { i in
+                AppSlot(id: UUID(), appURL: nil, hotkey: nil, gridIndex: i)
+            }
+        }
+    }
+
+    func export(to url: URL) throws {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        let data = try encoder.encode(slots)
+        try data.write(to: url)
+    }
+
     // MARK: - Persistence
 
     private func save() {
-        guard let data = try? JSONEncoder().encode(slots) else { return }
-        UserDefaults.standard.set(data, forKey: defaultsKey)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        guard let data = try? encoder.encode(slots) else { return }
+        let dir = configURL.deletingLastPathComponent()
+        try? FileManager.default.createDirectory(
+            at: dir, withIntermediateDirectories: true)
+        try? data.write(to: configURL)
     }
 
     private func load() {
-        guard let data = UserDefaults.standard.data(forKey: defaultsKey),
-            let decoded = try? JSONDecoder().decode(
-                [AppSlot].self, from: data)
-        else { return }
-        slots = decoded
+        if let data = try? Data(contentsOf: configURL),
+            let decoded = try? JSONDecoder().decode([AppSlot].self, from: data)
+        {
+            slots = decoded
+            return
+        }
+        // Migrate from UserDefaults on first run
+        if let data = UserDefaults.standard.data(forKey: legacyDefaultsKey),
+            let decoded = try? JSONDecoder().decode([AppSlot].self, from: data)
+        {
+            slots = decoded
+            save()
+            UserDefaults.standard.removeObject(forKey: legacyDefaultsKey)
+        }
     }
 }
