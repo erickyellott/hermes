@@ -7,13 +7,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     static private(set) var shared: AppDelegate!
 
     private var overlayWindow: OverlayWindow?
-    let slotStore = SlotStore()
+    let slotStore: SlotStore
+    let windowLayoutStore: WindowLayoutStore
     let hotkeyManager = HotkeyManager()
+
+    override init() {
+        let store = SlotStore()
+        slotStore = store
+        windowLayoutStore = WindowLayoutStore(
+            configDir: store.configURL.deletingLastPathComponent())
+        super.init()
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppDelegate.shared = self
+        if !RecordingEventTap.isAccessibilityGranted {
+            RecordingEventTap.promptAccessibilityOnce()
+        }
         installCarbonEventHandler()
         hotkeyManager.slotStore = slotStore
+        hotkeyManager.windowLayoutStore = windowLayoutStore
         hotkeyManager.registerAll()
         showOverlay()
     }
@@ -37,9 +50,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     &hotKeyID
                 )
 
+                let sig = hotKeyID.signature
                 let id = hotKeyID.id
+                print("[Hermes] Carbon hotkey fired: sig=0x\(String(sig, radix: 16)) id=\(id)")
                 Task { @MainActor in
-                    AppDelegate.shared!.hotkeyManager.handleHotKey(id: id)
+                    let mgr = AppDelegate.shared!.hotkeyManager
+                    if sig == 0x484D5253 { // "HMRS" — app slots
+                        mgr.handleAppHotKey(id: id)
+                    } else if sig == 0x484D574C { // "HMWL" — window layouts
+                        mgr.handleLayoutHotKey(id: id)
+                    } else {
+                        print("[Hermes] Carbon hotkey: unrecognized signature 0x\(String(sig, radix: 16))")
+                    }
                 }
                 return noErr
             },
@@ -61,6 +83,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if overlayWindow == nil {
             overlayWindow = OverlayWindow(
                 slotStore: slotStore,
+                windowLayoutStore: windowLayoutStore,
                 hotkeyManager: hotkeyManager,
                 onDismiss: { [weak self] in self?.dismissOverlay() }
             )

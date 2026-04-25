@@ -41,12 +41,14 @@ struct KeyEventHandlerView: NSViewRepresentable {
         let view = KeyCaptureView()
         view.onKeyDown = onKeyDown
         view.onFlagsChanged = onFlagsChanged
+        view.isActive = isActive
         return view
     }
 
     func updateNSView(_ nsView: KeyCaptureView, context: Context) {
         nsView.onKeyDown = onKeyDown
         nsView.onFlagsChanged = onFlagsChanged
+        nsView.isActive = isActive
         if isActive && !context.coordinator.wasActive {
             DispatchQueue.main.async {
                 nsView.window?.makeFirstResponder(nsView)
@@ -65,14 +67,23 @@ struct KeyEventHandlerView: NSViewRepresentable {
 final class KeyCaptureView: NSView {
     var onKeyDown: ((NSEvent) -> Void)?
     var onFlagsChanged: ((NSEvent) -> Void)?
+    var isActive: Bool = false
 
     override var acceptsFirstResponder: Bool { true }
 
     override func keyDown(with event: NSEvent) {
-        onKeyDown?(event)
+        if isActive {
+            onKeyDown?(event)
+        } else {
+            super.keyDown(with: event)
+        }
     }
 
     override func flagsChanged(with event: NSEvent) {
-        onFlagsChanged?(event)
+        if isActive {
+            onFlagsChanged?(event)
+        } else {
+            super.flagsChanged(with: event)
+        }
     }
 }

@@ -32,7 +32,7 @@ final class RecordingEventTap: @unchecked Sendable {
         let userInfo = Unmanaged.passUnretained(self).toOpaque()
 
         guard let tap = CGEvent.tapCreate(
-            tap: .cgSessionEventTap,
+            tap: .cghidEventTap,
             place: .headInsertEventTap,
             options: .defaultTap,
             eventsOfInterest: eventMask,
@@ -104,6 +104,7 @@ private func recordingTapCallback(
     }
 
     if type == .keyDown {
+        print("[Hermes] RecordingTap keyDown: keyCode=0x\(String(keyCode, radix: 16)) flags=0x\(String(flags.rawValue, radix: 16))")
         // Let ⌘Q through so the app can always be quit
         let isCommandQ = keyCode == 0x0C && flags.contains(.command)
         DispatchQueue.main.async {

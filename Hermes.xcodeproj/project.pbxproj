@@ -25,6 +25,14 @@
 		A10016 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10016; };
 		A10017 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10019; };
 		A10018 /* RecordingEventTap.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10020; };
+		A10019 /* LayoutKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10021; };
+		A10020 /* WindowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10022; };
+		A10021 /* WindowLayoutStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10023; };
+		A10022 /* WindowResizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10024; };
+		A10023 /* LayoutIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10025; };
+		A10024 /* WindowLayoutSlotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10026; };
+		A10025 /* WindowResizePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10027; };
+		A10026 /* ScrollEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10028; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +56,14 @@
 		B10018 /* Hermes.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Hermes.entitlements; sourceTree = "<group>"; };
 		B10019 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B10020 /* RecordingEventTap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingEventTap.swift; sourceTree = "<group>"; };
+		B10021 /* LayoutKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutKind.swift; sourceTree = "<group>"; };
+		B10022 /* WindowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowLayout.swift; sourceTree = "<group>"; };
+		B10023 /* WindowLayoutStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowLayoutStore.swift; sourceTree = "<group>"; };
+		B10024 /* WindowResizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowResizer.swift; sourceTree = "<group>"; };
+		B10025 /* LayoutIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutIcon.swift; sourceTree = "<group>"; };
+		B10026 /* WindowLayoutSlotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowLayoutSlotView.swift; sourceTree = "<group>"; };
+		B10027 /* WindowResizePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowResizePage.swift; sourceTree = "<group>"; };
+		B10028 /* ScrollEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollEventHandler.swift; sourceTree = "<group>"; };
 		C10001 /* Hermes.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hermes.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -100,6 +116,9 @@
 				B10004 /* HotkeyCombo.swift */,
 				B10005 /* SlotStore.swift */,
 				B10006 /* AppSearcher.swift */,
+				B10021 /* LayoutKind.swift */,
+				B10022 /* WindowLayout.swift */,
+				B10023 /* WindowLayoutStore.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -109,6 +128,7 @@
 			children = (
 				B10007 /* HotkeyManager.swift */,
 				B10020 /* RecordingEventTap.swift */,
+				B10024 /* WindowResizer.swift */,
 			);
 			path = HotkeyEngine;
 			sourceTree = "<group>";
@@ -125,6 +145,10 @@
 				B10014 /* VisualEffectBlur.swift */,
 				B10015 /* KeyEventHandler.swift */,
 				B10019 /* SettingsView.swift */,
+				B10025 /* LayoutIcon.swift */,
+				B10026 /* WindowLayoutSlotView.swift */,
+				B10027 /* WindowResizePage.swift */,
+				B10028 /* ScrollEventHandler.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -218,6 +242,14 @@
 				A10015 /* KeyEventHandler.swift in Sources */,
 				A10017 /* SettingsView.swift in Sources */,
 				A10018 /* RecordingEventTap.swift in Sources */,
+				A10019 /* LayoutKind.swift in Sources */,
+				A10020 /* WindowLayout.swift in Sources */,
+				A10021 /* WindowLayoutStore.swift in Sources */,
+				A10022 /* WindowResizer.swift in Sources */,
+				A10023 /* LayoutIcon.swift in Sources */,
+				A10024 /* WindowLayoutSlotView.swift in Sources */,
+				A10025 /* WindowResizePage.swift in Sources */,
+				A10026 /* ScrollEventHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

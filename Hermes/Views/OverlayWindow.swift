@@ -3,11 +3,18 @@ import SwiftUI
 
 final class OverlayWindow: NSWindow {
     private let slotStore: SlotStore
+    private let windowLayoutStore: WindowLayoutStore
     private let hotkeyManager: HotkeyManager
     private let onDismiss: () -> Void
 
-    init(slotStore: SlotStore, hotkeyManager: HotkeyManager, onDismiss: @escaping () -> Void) {
+    init(
+        slotStore: SlotStore,
+        windowLayoutStore: WindowLayoutStore,
+        hotkeyManager: HotkeyManager,
+        onDismiss: @escaping () -> Void
+    ) {
         self.slotStore = slotStore
+        self.windowLayoutStore = windowLayoutStore
         self.hotkeyManager = hotkeyManager
         self.onDismiss = onDismiss
 
@@ -37,6 +44,7 @@ final class OverlayWindow: NSWindow {
 
         let overlayView = OverlayView(
             slotStore: slotStore,
+            windowLayoutStore: windowLayoutStore,
             hotkeyManager: hotkeyManager,
             onDismiss: onDismiss
         )
@@ -55,4 +63,8 @@ final class OverlayWindow: NSWindow {
 
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
+
+    override func cancelOperation(_ sender: Any?) {
+        onDismiss()
+    }
 }
