@@ -39,6 +39,10 @@ final class WindowResizer {
             if screens.count > 1, let idx = screens.firstIndex(of: currentScreen) {
                 let nextScreen = screens[(idx + 1) % screens.count]
                 print("[Hermes] WindowResizer: cycling to next screen \(nextScreen.localizedName)")
+                // When crossing displays with different vertical bounds, the window
+                // can get clipped on the first apply. Apply twice to force it to
+                // settle at the correct size.
+                apply(kind: kind, window: axWindow, screen: nextScreen)
                 apply(kind: kind, window: axWindow, screen: nextScreen)
                 lastResize[pid] = LastResize(kind: kind, screenID: displayID(of: nextScreen))
             } else {
