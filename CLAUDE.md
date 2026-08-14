@@ -24,19 +24,34 @@ Bump `VERSION`, then run `/release`.
 
 ## Accessibility permissions when developing
 
-Window resizing requires Accessibility permission (TCC). macOS keys this
-permission on the binary path, not the bundle ID — so debug builds from Xcode
-(DerivedData), release builds in `/Applications`, and ad-hoc builds elsewhere
-are all treated as separate apps. Granting one does not grant the others.
-
-If `AXIsProcessTrusted()` logs `false` even though "Hermes" appears enabled in
-System Settings → Privacy & Security → Accessibility, the listed entry is a
-different binary than the running one. Reset and re-grant:
+Window resizing requires Accessibility permission (TCC). Hermes is ad-hoc signed
+(`codesign --sign -`), which gives it a designated requirement that is nothing
+but the cdhash of the binary:
 
 ```
-tccutil reset Accessibility com.hermes.app
+codesign -d -r- /Applications/Hermes.app
+# designated => cdhash H"9b294e9b751f8b0e63c0073f783313df61442466"
 ```
 
-Then quit the running Hermes, relaunch, and grant when prompted. The prompt is
-fired at launch from `AppDelegate.applicationDidFinishLaunching` via
-`RecordingEventTap.promptAccessibilityOnce()`.
+TCC records that requirement when you grant permission. The cdhash changes on
+every build, so **every new build invalidates the grant** — debug builds from
+Xcode, release builds in `/Applications`, and ad-hoc builds elsewhere are all
+treated as different apps.
+
+The failure is silent: the stale entry keeps showing as enabled in System
+Settings → Privacy & Security → Accessibility while `AXIsProcessTrusted()` logs
+`false`. To reset and re-grant:
+
+```
+scripts/reset-accessibility.sh [/path/to/Hermes.app]
+```
+
+It quits Hermes, resets the TCC entry, clears quarantine, and relaunches. The
+prompt is fired at launch from `AppDelegate.applicationDidFinishLaunching` via
+`RecordingEventTap.promptAccessibilityOnce()` — so that launch-time prompt is
+load-bearing for this flow, don't remove it while ad-hoc signing is in use.
+
+The real fix is signing with a stable identity (self-signed code-signing cert or
+a Developer ID) instead of ad-hoc. That makes the requirement identity-based
+rather than cdhash-based, so the grant survives rebuilds and you only grant
+once.
