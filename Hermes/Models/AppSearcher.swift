@@ -50,12 +50,15 @@ final class AppSearcher: ObservableObject {
     private var allApps: [URL] = []
 
     init() {
-        loadApps()
-        results = defaultResults()
+        refresh()
     }
 
-    private func loadApps() {
+    /// Re-scans installed apps and recomputes results. The overlay window is
+    /// created once and reused, so without this both the installed-app list and
+    /// the running-app defaults stay frozen at first-show for the app's lifetime.
+    func refresh() {
         allApps = InstalledApps.urls()
+        search()
     }
 
     private func defaultResults() -> [SearchResult] {

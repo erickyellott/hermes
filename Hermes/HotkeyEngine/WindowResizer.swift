@@ -39,10 +39,6 @@ final class WindowResizer {
             if screens.count > 1, let idx = screens.firstIndex(of: currentScreen) {
                 let nextScreen = screens[(idx + 1) % screens.count]
                 print("[Hermes] WindowResizer: cycling to next screen \(nextScreen.localizedName)")
-                // When crossing displays with different vertical bounds, the window
-                // can get clipped on the first apply. Apply twice to force it to
-                // settle at the correct size.
-                apply(kind: kind, window: axWindow, screen: nextScreen)
                 apply(kind: kind, window: axWindow, screen: nextScreen)
                 lastResize[pid] = LastResize(kind: kind, screenID: displayID(of: nextScreen))
             } else {
@@ -64,18 +60,61 @@ final class WindowResizer {
         let primaryHeight = NSScreen.screens.first?.frame.height ?? screen.frame.height
         let flippedY = primaryHeight - target.maxY
 
-        var position = CGPoint(x: target.minX, y: flippedY)
-        var size = CGSize(width: target.width, height: target.height)
+        let position = CGPoint(x: target.minX, y: flippedY)
+        let size = CGSize(width: target.width, height: target.height)
 
         print("[Hermes] WindowResizer: applying \(kind.displayName) → position=\(position) size=\(size)")
 
-        if let posValue = AXValueCreate(.cgPoint, &position) {
-            let r = AXUIElementSetAttributeValue(window, kAXPositionAttribute as CFString, posValue)
-            if r != .success { print("[Hermes] WindowResizer: set position failed AXError=\(r.rawValue)") }
+        if setFrame(window, position: position, size: size) {
+            print("[Hermes] WindowResizer: applied atomically via AXFrame")
+            return
         }
-        if let sizeValue = AXValueCreate(.cgSize, &size) {
-            let r = AXUIElementSetAttributeValue(window, kAXSizeAttribute as CFString, sizeValue)
-            if r != .success { print("[Hermes] WindowResizer: set size failed AXError=\(r.rawValue)") }
+
+        // Position and size are separate writes, so the window is briefly at one
+        // frame's position with the other's size. Sizing first keeps that
+        // intermediate frame from ever being larger than the display it currently
+        // sits on — which is both the visible flicker and the reason the target app
+        // clamps the write. The trailing size write recovers that clamping when
+        // growing onto a larger display.
+        setSize(window, size)
+        setPosition(window, position)
+        setSize(window, size)
+    }
+
+    /// Sets position and size as a single write, so no intermediate frame is ever
+    /// drawn. Most apps expose AXFrame read-only; callers must handle `false`.
+    private func setFrame(
+        _ window: AXUIElement, position: CGPoint, size: CGSize
+    ) -> Bool {
+        let attribute = "AXFrame" as CFString
+        var settable = DarwinBoolean(false)
+        guard
+            AXUIElementIsAttributeSettable(window, attribute, &settable) == .success,
+            settable.boolValue
+        else { return false }
+
+        var rect = CGRect(origin: position, size: size)
+        guard let value = AXValueCreate(.cgRect, &rect) else { return false }
+        return AXUIElementSetAttributeValue(window, attribute, value) == .success
+    }
+
+    private func setPosition(_ window: AXUIElement, _ position: CGPoint) {
+        var position = position
+        guard let value = AXValueCreate(.cgPoint, &position) else { return }
+        let r = AXUIElementSetAttributeValue(
+            window, kAXPositionAttribute as CFString, value)
+        if r != .success {
+            print("[Hermes] WindowResizer: set position failed AXError=\(r.rawValue)")
+        }
+    }
+
+    private func setSize(_ window: AXUIElement, _ size: CGSize) {
+        var size = size
+        guard let value = AXValueCreate(.cgSize, &size) else { return }
+        let r = AXUIElementSetAttributeValue(
+            window, kAXSizeAttribute as CFString, value)
+        if r != .success {
+            print("[Hermes] WindowResizer: set size failed AXError=\(r.rawValue)")
         }
     }
 

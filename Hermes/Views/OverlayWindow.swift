@@ -1,6 +1,16 @@
 import AppKit
 import SwiftUI
 
+extension Notification.Name {
+    /// Posted each time the overlay is brought on screen. The window is created
+    /// once and reused, so `onAppear` fires only for the first show.
+    static let overlayWillShow = Notification.Name("HermesOverlayWillShow")
+
+    /// Posted each time the overlay is hidden. Every dismissal path funnels
+    /// through `OverlayWindow.dismiss()`, so this catches all of them.
+    static let overlayDidDismiss = Notification.Name("HermesOverlayDidDismiss")
+}
+
 final class OverlayWindow: NSWindow {
     private let slotStore: SlotStore
     private let windowLayoutStore: WindowLayoutStore
@@ -55,10 +65,12 @@ final class OverlayWindow: NSWindow {
         guard let screen = NSScreen.main else { return }
         setFrame(screen.frame, display: true)
         makeKeyAndOrderFront(nil)
+        NotificationCenter.default.post(name: .overlayWillShow, object: self)
     }
 
     func dismiss() {
         orderOut(nil)
+        NotificationCenter.default.post(name: .overlayDidDismiss, object: self)
     }
 
     override var canBecomeKey: Bool { true }

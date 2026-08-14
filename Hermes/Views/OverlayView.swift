@@ -105,6 +105,12 @@ struct OverlayView: View {
             onFlagsChanged: { event in handleFlagsChanged(event) }
         )
         .onScrollWheel { event in handleScroll(event) }
+        .onReceive(NotificationCenter.default.publisher(for: .overlayWillShow)) { _ in
+            searcher.refresh()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .overlayDidDismiss)) { _ in
+            searcher.query = ""
+        }
     }
 
     // MARK: - Trackpad scroll paging
