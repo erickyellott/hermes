@@ -27,11 +27,15 @@ PlistBuddy edits. Always run the verification step and stop if it disagrees.
 Keep them terse. One line per feature or fix, no prose, no headings beyond the
 two below. Describe the user-visible change, not the implementation.
 
+Prefix every bullet with `feat:` or `fix:`. List all `feat:` lines first and all
+`fix:` lines last.
+
 ```
 ## Changes
 
-- Window resize no longer flickers when moving between displays
-- Overlay app list refreshes on open instead of going stale
+- feat: Profiles let you swap whole hotkey sets from the config file
+- fix: Window resize no longer flickers when moving between displays
+- fix: Overlay app list refreshes on open instead of going stale
 
 ## Install
 ...
@@ -74,7 +78,8 @@ gh release create v$VERSION ~/Desktop/Hermes-$VERSION.zip \
   --title "Hermes v$VERSION" \
   --notes "## Changes
 
-- <one line per feature or fix>
+- feat: <one line, all feat: lines first>
+- fix: <one line, all fix: lines last>
 
 ## Install
 
