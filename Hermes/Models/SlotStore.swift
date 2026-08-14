@@ -4,36 +4,27 @@ import Foundation
 
 @MainActor
 final class SlotStore: ObservableObject {
-    static let columns = 7
-    static let hotkeyRows = 4
-    static let totalHotkeySlots = columns * hotkeyRows  // 28
+    // Nonisolated: the grid shape is also needed off the main actor, by
+    // config serialization and migration.
+    nonisolated static let columns = 7
+    nonisolated static let hotkeyRows = 4
+    nonisolated static let totalHotkeySlots = columns * hotkeyRows  // 28
 
     @Published var slots: [AppSlot] = []
     @Published private(set) var configURL: URL
 
-    private let configPathKey = "hermes.configPath"
-    private let legacyDefaultsKey = "hermes.slots"
+    private let configFile: ConfigFile
 
-    init() {
-        if let saved = UserDefaults.standard.string(forKey: "hermes.configPath") {
-            configURL = URL(fileURLWithPath: saved)
-        } else {
-            configURL = Self.makeDefaultConfigURL()
-        }
-        load()
-        if slots.isEmpty {
-            slots = (0..<Self.totalHotkeySlots).map { i in
-                AppSlot(id: UUID(), appURL: nil, hotkey: nil, gridIndex: i)
-            }
-        }
+    init(configFile: ConfigFile) {
+        self.configFile = configFile
+        self.configURL = configFile.url
+        slots = configFile.loadSlots()
     }
 
-    private static func makeDefaultConfigURL() -> URL {
-        let appSupport = FileManager.default.urls(
-            for: .applicationSupportDirectory, in: .userDomainMask
-        ).first!
-        return appSupport.appendingPathComponent("Hermes/config.json")
-    }
+    /// Apps named in the config that aren't installed on this machine. Their
+    /// slots are held rather than cleared, so a shared config isn't eroded by
+    /// whichever Mac happens to be missing an app.
+    var unresolvedSlots: [AppSlot] { slots.filter(\.isUnresolved) }
 
     func assignApp(url: URL, toIndex index: Int) {
         guard index >= 0, index < slots.count else { return }
@@ -45,6 +36,7 @@ final class SlotStore: ObservableObject {
     func clearSlot(at index: Int) {
         guard index >= 0, index < slots.count else { return }
         slots[index].appURL = nil
+        slots[index].unresolved = nil
         slots[index].hotkey = nil
         save()
     }
@@ -70,64 +62,35 @@ final class SlotStore: ObservableObject {
             sourceIndex != destIndex
         else { return }
 
-        let sourceApp = slots[sourceIndex].appURL
-        let sourceHotkey = slots[sourceIndex].hotkey
-        let destApp = slots[destIndex].appURL
-        let destHotkey = slots[destIndex].hotkey
+        // Swap contents but not identity: `id` and `gridIndex` belong to the
+        // grid position, not to the app sitting in it.
+        let source = slots[sourceIndex]
+        let dest = slots[destIndex]
 
-        slots[sourceIndex].appURL = destApp
-        slots[sourceIndex].hotkey = destHotkey
-        slots[destIndex].appURL = sourceApp
-        slots[destIndex].hotkey = sourceHotkey
+        slots[sourceIndex].appURL = dest.appURL
+        slots[sourceIndex].unresolved = dest.unresolved
+        slots[sourceIndex].hotkey = dest.hotkey
+        slots[destIndex].appURL = source.appURL
+        slots[destIndex].unresolved = source.unresolved
+        slots[destIndex].hotkey = source.hotkey
         save()
     }
 
     // MARK: - Config management
 
-    func switchConfig(to url: URL) {
-        configURL = url
-        UserDefaults.standard.set(url.path, forKey: configPathKey)
-        load()
-        if slots.isEmpty {
-            slots = (0..<Self.totalHotkeySlots).map { i in
-                AppSlot(id: UUID(), appURL: nil, hotkey: nil, gridIndex: i)
-            }
-        }
+    /// Re-reads from the config file. Called after a profile switch.
+    func reload() {
+        configURL = configFile.url
+        slots = configFile.loadSlots()
     }
 
     func export(to url: URL) throws {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        let data = try encoder.encode(slots)
-        try data.write(to: url)
+        try configFile.exportCopy(to: url)
     }
 
     // MARK: - Persistence
 
     private func save() {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        guard let data = try? encoder.encode(slots) else { return }
-        let dir = configURL.deletingLastPathComponent()
-        try? FileManager.default.createDirectory(
-            at: dir, withIntermediateDirectories: true)
-        try? data.write(to: configURL)
-    }
-
-    private func load() {
-        if let data = try? Data(contentsOf: configURL),
-            let decoded = try? JSONDecoder().decode([AppSlot].self, from: data)
-        {
-            slots = decoded
-            return
-        }
-        // Migrate from UserDefaults on first run
-        if let data = UserDefaults.standard.data(forKey: legacyDefaultsKey),
-            let decoded = try? JSONDecoder().decode([AppSlot].self, from: data)
-        {
-            slots = decoded
-            save()
-            UserDefaults.standard.removeObject(forKey: legacyDefaultsKey)
-        }
+        configFile.update(slots: slots)
     }
 }

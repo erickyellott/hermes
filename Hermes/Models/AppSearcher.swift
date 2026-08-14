@@ -12,6 +12,34 @@ struct SearchResult: Identifiable, Equatable {
     }
 }
 
+/// Scans the standard application directories. Shared by the overlay's search
+/// and by config-entry resolution, which needs the same name → bundle lookup.
+enum InstalledApps {
+    static func urls() -> [URL] {
+        var dirs = FileManager.default.urls(
+            for: .applicationDirectory, in: .allDomainsMask)
+        dirs.append(
+            FileManager.default.homeDirectoryForCurrentUser
+                .appendingPathComponent("Applications"))
+
+        var found: [URL] = []
+        for dir in dirs {
+            guard
+                let contents = try? FileManager.default.contentsOfDirectory(
+                    at: dir,
+                    includingPropertiesForKeys: nil,
+                    options: [.skipsHiddenFiles]
+                )
+            else { continue }
+            found.append(contentsOf: contents.filter { $0.pathExtension == "app" })
+        }
+        return found.sorted {
+            $0.deletingPathExtension().lastPathComponent.lowercased()
+                < $1.deletingPathExtension().lastPathComponent.lowercased()
+        }
+    }
+}
+
 @MainActor
 final class AppSearcher: ObservableObject {
     @Published var query: String = "" {
@@ -27,40 +55,7 @@ final class AppSearcher: ObservableObject {
     }
 
     private func loadApps() {
-        let dirs = FileManager.default.urls(
-            for: .applicationDirectory, in: .allDomainsMask
-        )
-        var found: [URL] = []
-        for dir in dirs {
-            guard
-                let contents = try? FileManager.default.contentsOfDirectory(
-                    at: dir,
-                    includingPropertiesForKeys: nil,
-                    options: [.skipsHiddenFiles]
-                )
-            else { continue }
-            found.append(
-                contentsOf: contents.filter {
-                    $0.pathExtension == "app"
-                })
-        }
-        let homeApps =
-            FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Applications")
-        if let contents = try? FileManager.default.contentsOfDirectory(
-            at: homeApps,
-            includingPropertiesForKeys: nil,
-            options: [.skipsHiddenFiles]
-        ) {
-            found.append(
-                contentsOf: contents.filter {
-                    $0.pathExtension == "app"
-                })
-        }
-        allApps = found.sorted {
-            $0.deletingPathExtension().lastPathComponent.lowercased()
-                < $1.deletingPathExtension().lastPathComponent.lowercased()
-        }
+        allApps = InstalledApps.urls()
     }
 
     private func defaultResults() -> [SearchResult] {

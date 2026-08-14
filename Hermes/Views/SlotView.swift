@@ -23,6 +23,8 @@ struct SlotView: View {
                     recordingContent
                 } else if let icon = slot.appIcon {
                     filledContent(icon: icon)
+                } else if slot.isUnresolved {
+                    unresolvedContent
                 } else {
                     emptyContent
                 }
@@ -83,7 +85,8 @@ struct SlotView: View {
             if let name = slot.appName {
                 Text(name)
                     .font(.system(size: 11))
-                    .foregroundStyle(.white.opacity(0.85))
+                    .foregroundStyle(
+                        .white.opacity(slot.isUnresolved ? 0.45 : 0.85))
                     .lineLimit(1)
             } else {
                 Text("")
@@ -120,6 +123,22 @@ struct SlotView: View {
         }
     }
 
+    /// An app the config names but that isn't installed on this Mac. Drawn as
+    /// occupied-but-inactive rather than blank, so it's clear the slot is held
+    /// for another machine and not free to reuse.
+    private var unresolvedContent: some View {
+        ZStack(alignment: .bottom) {
+            Image(systemName: "questionmark.square.dashed")
+                .font(.system(size: 26, weight: .light))
+                .foregroundStyle(.white.opacity(0.35))
+
+            if let combo = slot.hotkey {
+                HotkeyBadge(combo: combo)
+                    .padding(.bottom, 3)
+            }
+        }
+    }
+
     private var emptyContent: some View {
         ZStack {
             Image(systemName: "plus")
@@ -137,7 +156,7 @@ struct SlotView: View {
             return .accentColor
         } else if isTargeted {
             return .white.opacity(0.4)
-        } else if slot.isEmpty {
+        } else if slot.isEmpty || slot.isUnresolved {
             return .white.opacity(0.15)
         } else {
             return .clear
@@ -146,7 +165,7 @@ struct SlotView: View {
 
     private var borderWidth: CGFloat {
         if isRecording || isTargeted { return 2 }
-        if slot.isEmpty { return 1 }
+        if slot.isEmpty || slot.isUnresolved { return 1 }
         return 0
     }
 
