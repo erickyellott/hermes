@@ -3,10 +3,28 @@ import SwiftUI
 private struct MenuBarMenuView: View {
     @Environment(\.openSettings) private var openSettings
     let appDelegate: AppDelegate
+    @ObservedObject private var profileStore: ProfileStore
+
+    init(appDelegate: AppDelegate) {
+        self.appDelegate = appDelegate
+        self.profileStore = appDelegate.profileStore
+    }
 
     var body: some View {
         Button("Open Hermes") {
             AppDelegate.shared.showOverlay()
+        }
+        Divider()
+        Menu("Profile") {
+            ForEach(profileStore.names, id: \.self) { name in
+                Button {
+                    appDelegate.switchProfile(to: name)
+                } label: {
+                    // Menu items can't show a checkmark directly, so the
+                    // active profile is marked inline.
+                    Text(name == profileStore.active ? "✓ \(name)" : name)
+                }
+            }
         }
         Divider()
         Button("Settings") {
@@ -35,7 +53,9 @@ struct HermesApp: App {
         }
 
         Settings {
-            SettingsView(slotStore: appDelegate.slotStore)
+            SettingsView(
+                slotStore: appDelegate.slotStore,
+                profileStore: appDelegate.profileStore)
         }
     }
 }

@@ -5,17 +5,16 @@ import Foundation
 final class WindowLayoutStore: ObservableObject {
     @Published var layouts: [WindowLayout] = []
 
-    private let configURL: URL
+    private let configFile: ConfigFile
 
-    init(configDir: URL) {
-        configURL = configDir.appendingPathComponent("window-layouts.json")
-        load()
+    init(configFile: ConfigFile) {
+        self.configFile = configFile
+        layouts = configFile.loadLayouts()
     }
 
-    private func makeDefaults() -> [WindowLayout] {
-        LayoutKind.allCases.map {
-            WindowLayout(id: UUID(), kind: $0, hotkey: nil)
-        }
+    /// Re-reads from the config file. Called after a profile switch.
+    func reload() {
+        layouts = configFile.loadLayouts()
     }
 
     func layout(for kind: LayoutKind) -> WindowLayout? {
@@ -45,29 +44,6 @@ final class WindowLayoutStore: ObservableObject {
     // MARK: - Persistence
 
     private func save() {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        guard let data = try? encoder.encode(layouts) else { return }
-        let dir = configURL.deletingLastPathComponent()
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        try? data.write(to: configURL)
-    }
-
-    private func load() {
-        if let data = try? Data(contentsOf: configURL),
-            let decoded = try? JSONDecoder().decode(
-                [WindowLayout].self, from: data)
-        {
-            // Ensure all kinds present (handles adding new kinds later)
-            var result = decoded
-            for kind in LayoutKind.allCases {
-                if !result.contains(where: { $0.kind == kind }) {
-                    result.append(WindowLayout(id: UUID(), kind: kind, hotkey: nil))
-                }
-            }
-            layouts = result
-        } else {
-            layouts = makeDefaults()
-        }
+        configFile.update(layouts: layouts)
     }
 }

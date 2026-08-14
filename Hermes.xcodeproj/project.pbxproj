@@ -10,6 +10,8 @@
 		A10001 /* HermesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10001; };
 		A10002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10002; };
 		A10003 /* AppSlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10003; };
+		A10030 /* ConfigFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10030; };
+		A10031 /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10031; };
 		A10004 /* HotkeyCombo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10004; };
 		A10005 /* SlotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10005; };
 		A10006 /* AppSearcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10006; };
@@ -40,6 +42,8 @@
 		B10001 /* HermesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HermesApp.swift; sourceTree = "<group>"; };
 		B10002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B10003 /* AppSlot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSlot.swift; sourceTree = "<group>"; };
+		B10030 /* ConfigFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigFile.swift; sourceTree = "<group>"; };
+		B10031 /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
 		B10004 /* HotkeyCombo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyCombo.swift; sourceTree = "<group>"; };
 		B10005 /* SlotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotStore.swift; sourceTree = "<group>"; };
 		B10006 /* AppSearcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSearcher.swift; sourceTree = "<group>"; };
@@ -115,6 +119,8 @@
 			isa = PBXGroup;
 			children = (
 				B10003 /* AppSlot.swift */,
+				B10030 /* ConfigFile.swift */,
+				B10031 /* ProfileStore.swift */,
 				B10004 /* HotkeyCombo.swift */,
 				B10005 /* SlotStore.swift */,
 				B10006 /* AppSearcher.swift */,
@@ -231,6 +237,8 @@
 				A10001 /* HermesApp.swift in Sources */,
 				A10002 /* AppDelegate.swift in Sources */,
 				A10003 /* AppSlot.swift in Sources */,
+				A10030 /* ConfigFile.swift in Sources */,
+				A10031 /* ProfileStore.swift in Sources */,
 				A10004 /* HotkeyCombo.swift in Sources */,
 				A10005 /* SlotStore.swift in Sources */,
 				A10006 /* AppSearcher.swift in Sources */,

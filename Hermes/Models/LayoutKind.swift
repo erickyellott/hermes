@@ -19,6 +19,25 @@ enum LayoutKind: String, Codable, CaseIterable, Identifiable {
         }
     }
 
+    /// Key used in the config file. Kept separate from `rawValue` so the file
+    /// stays kebab-case while the Swift cases stay camelCase.
+    var configName: String {
+        switch self {
+        case .leftTwoThirds: return "left-two-thirds"
+        case .rightOneThird: return "right-one-third"
+        case .leftHalf: return "left-half"
+        case .rightHalf: return "right-half"
+        case .maximize: return "maximize"
+        }
+    }
+
+    init?(configName: String) {
+        guard let match = LayoutKind.allCases.first(where: {
+            $0.configName == configName
+        }) else { return nil }
+        self = match
+    }
+
     // Index used as Carbon hotkey ID in the "HMWL" signature space
     var hotkeyIndex: UInt32 {
         switch self {

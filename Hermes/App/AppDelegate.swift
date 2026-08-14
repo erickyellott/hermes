@@ -9,14 +9,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var overlayWindow: OverlayWindow?
     let slotStore: SlotStore
     let windowLayoutStore: WindowLayoutStore
+    let profileStore: ProfileStore
     let hotkeyManager = HotkeyManager()
+    private let configFile: ConfigFile
 
     override init() {
-        let store = SlotStore()
-        slotStore = store
-        windowLayoutStore = WindowLayoutStore(
-            configDir: store.configURL.deletingLastPathComponent())
+        let profiles = ProfileStore()
+        // Both stores persist into the same document, so they share one
+        // `ConfigFile` — two independent writers would clobber each other.
+        let config = ConfigFile(url: profiles.activeURL)
+        ConfigMigration.runIfNeeded(into: config)
+        // On a fresh install nothing is written until the first edit, which
+        // would leave the profile picker empty. Materialize the active one.
+        if !config.exists { try? ConfigFile.createEmpty(at: config.url) }
+
+        profileStore = profiles
+        configFile = config
+        slotStore = SlotStore(configFile: config)
+        windowLayoutStore = WindowLayoutStore(configFile: config)
         super.init()
+        profiles.refresh()
+    }
+
+    /// Points every store at another profile and rebinds the hotkeys. The
+    /// stores share one `ConfigFile`, so the switch happens in one place.
+    func switchProfile(to name: String) {
+        guard name != profileStore.active else { return }
+        profileStore.setActive(name)
+        configFile.switchFile(to: profileStore.activeURL)
+        slotStore.reload()
+        windowLayoutStore.reload()
+        hotkeyManager.registerAll()
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
