@@ -373,10 +373,7 @@ struct OverlayView: View {
 
     private func openApp(at index: Int) {
         guard let url = slotStore.slots[index].appURL else { return }
-        NSWorkspace.shared.openApplication(
-            at: url,
-            configuration: NSWorkspace.OpenConfiguration()
-        ) { _, _ in }
+        AppActivator.activate(url)
         onDismiss()
     }
 

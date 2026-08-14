@@ -13,6 +13,7 @@
 		A10004 /* HotkeyCombo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10004; };
 		A10005 /* SlotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10005; };
 		A10006 /* AppSearcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10006; };
+		A10027 /* AppActivator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10029; };
 		A10007 /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10007; };
 		A10008 /* OverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10008; };
 		A10009 /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10009; };
@@ -42,6 +43,7 @@
 		B10004 /* HotkeyCombo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyCombo.swift; sourceTree = "<group>"; };
 		B10005 /* SlotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotStore.swift; sourceTree = "<group>"; };
 		B10006 /* AppSearcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSearcher.swift; sourceTree = "<group>"; };
+		B10029 /* AppActivator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppActivator.swift; sourceTree = "<group>"; };
 		B10007 /* HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
 		B10008 /* OverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayWindow.swift; sourceTree = "<group>"; };
 		B10009 /* OverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
@@ -116,6 +118,7 @@
 				B10004 /* HotkeyCombo.swift */,
 				B10005 /* SlotStore.swift */,
 				B10006 /* AppSearcher.swift */,
+				B10029 /* AppActivator.swift */,
 				B10021 /* LayoutKind.swift */,
 				B10022 /* WindowLayout.swift */,
 				B10023 /* WindowLayoutStore.swift */,
@@ -231,6 +234,7 @@
 				A10004 /* HotkeyCombo.swift in Sources */,
 				A10005 /* SlotStore.swift in Sources */,
 				A10006 /* AppSearcher.swift in Sources */,
+				A10027 /* AppActivator.swift in Sources */,
 				A10007 /* HotkeyManager.swift in Sources */,
 				A10008 /* OverlayWindow.swift in Sources */,
 				A10009 /* OverlayView.swift in Sources */,

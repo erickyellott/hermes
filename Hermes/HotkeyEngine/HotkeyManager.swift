@@ -70,23 +70,7 @@ final class HotkeyManager {
         guard index >= 0, index < store.slots.count else { return }
         guard let appURL = store.slots[index].appURL else { return }
 
-        let bundleID = Bundle(url: appURL)?.bundleIdentifier ?? ""
-        let running = NSWorkspace.shared.runningApplications.first {
-            $0.bundleIdentifier == bundleID
-        }
-
-        if let app = running, app.isActive {
-            app.hide()
-        } else {
-            NSWorkspace.shared.openApplication(
-                at: appURL,
-                configuration: NSWorkspace.OpenConfiguration()
-            ) { _, error in
-                if let error = error {
-                    print("Failed to launch \(appURL.lastPathComponent): \(error)")
-                }
-            }
-        }
+        AppActivator.toggle(appURL)
     }
 
     func handleLayoutHotKey(id: UInt32) {
