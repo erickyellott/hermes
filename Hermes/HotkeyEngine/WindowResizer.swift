@@ -39,6 +39,12 @@ final class WindowResizer {
             if screens.count > 1, let idx = screens.firstIndex(of: currentScreen) {
                 let nextScreen = screens[(idx + 1) % screens.count]
                 print("[Hermes] WindowResizer: cycling to next screen \(nextScreen.localizedName)")
+                // Crossing displays needs two full passes. Height is clamped to the
+                // display the window is still on when the size write lands, so
+                // growing onto a larger display comes up short on the first pass no
+                // matter how the writes are ordered within it. The second pass runs
+                // once the app has settled on the new display and gets the height.
+                apply(kind: kind, window: axWindow, screen: nextScreen)
                 apply(kind: kind, window: axWindow, screen: nextScreen)
                 lastResize[pid] = LastResize(kind: kind, screenID: displayID(of: nextScreen))
             } else {
@@ -73,9 +79,9 @@ final class WindowResizer {
         // Position and size are separate writes, so the window is briefly at one
         // frame's position with the other's size. Sizing first keeps that
         // intermediate frame from ever being larger than the display it currently
-        // sits on — which is both the visible flicker and the reason the target app
-        // clamps the write. The trailing size write recovers that clamping when
-        // growing onto a larger display.
+        // sits on, which is the visible flicker. The trailing size write retries
+        // after the move, but it does not reliably recover a height clamp on its
+        // own — crossing displays still needs a second full pass (see `resize`).
         setSize(window, size)
         setPosition(window, position)
         setSize(window, size)
